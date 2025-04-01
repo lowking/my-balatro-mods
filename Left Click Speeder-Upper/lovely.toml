@@ -1,0 +1,48 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = "function love.update( dt )"
+position = "after"
+payload = '''
+	if not leftClickOriginalSpeed then
+		if G.SETTINGS.GAMESPEED > 4 then
+			G.SETTINGS.GAMESPEED = 4 -- In case game improperly loads with too high of a speed
+		end
+		leftClickOriginalSpeed = G.SETTINGS.GAMESPEED
+	end
+	if not G.OVERLAY_MENU then
+		if love.mouse.isDown(1) then
+			if G.STATE == (2 or 3 or 4 or 6 or 8 or 19) then --Values gotten from "self.STATES" in "globals.lua". Drawing cards isn't always able to be sped up, only works for individual card anims (holo, etc.)
+				G.SETTINGS.GAMESPEED = 16 --Arbitrary speed to set game to! Change to increase it even more.
+			end
+		else
+			G.SETTINGS.GAMESPEED = leftClickOriginalSpeed
+		end
+	else
+		if G.SETTINGS.GAMESPEED > 4 then -- In case game is being sped up while menu is created (Like on game over screen)
+			G.SETTINGS.GAMESPEED = leftClickOriginalSpeed
+		end
+		leftClickOriginalSpeed = G.SETTINGS.GAMESPEED --Remember the current speed.
+	end
+'''
+match_indent = true
+
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = "G:draw()"
+position = "after"
+payload = '''
+	if G.SETTINGS.GAMESPEED == 16 then
+		local windowWidth, windowHeight = love.graphics.getDimensions()
+		love.graphics.print(tostring(G.STATE),20,20)
+		love.graphics.printf(">>",0,windowHeight*0.95,windowWidth*0.98,"right")
+	end
+'''
+match_indent = true
