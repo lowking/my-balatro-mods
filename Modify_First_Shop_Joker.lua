@@ -26,13 +26,17 @@ local Original_Controller_key_press_update = Controller.key_press_update
 function Controller:key_press_update(key, dt)
     Original_Controller_key_press_update(self, key, dt)
     if key == 'g' then
-        if self.hovering.target and self.hovering.target:is(Card) and G.SETTINGS.paused and not(G.GAME.was_forced_joker_shop) then 
+        if self.hovering.target and self.hovering.target:is(Card) and G.SETTINGS.paused and not(G.GAME.was_forced_joker_shop) then
             local joker_name_with_j = self.hovering.target.config.center.key
             if string.find( joker_name_with_j,"j_" ) then
                 local edition = {negative = true}
                 self.hovering.target:set_edition(edition, true, true)
                 forced_joker_shop = joker_name_with_j
             end
+        else
+            G.GAME.was_forced_joker_shop = false
+            G.SETTINGS.paused = true
+            G.FUNCS:your_collection_jokers()
         end
     end
 end
